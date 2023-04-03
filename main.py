@@ -25,7 +25,8 @@ if __name__ == "__main__":
   # the genome will probably be a single array of i*h + h*o length, while the nn needs that broken into 2
   # 2D arrays, one i by h and the other h by o in size.
   games = [game.Game(False, screen, clock, GA.population[i]) for i in range(population)]
-  games[0].render = True
+  if renderAny:
+    games[0].render = True
 
   for gen in range(generations):
     print(gen+1)
