@@ -10,14 +10,22 @@ depending on how complex operations including walls end up.
 import nn
 import pygame as py
 import random
+vec=py.math.Vector2
 
-class Pacman():
+
+class Pacman(py.sprite.Sprite):
   '''
   neuralNet = None if human player.
   '''
   def __init__(self, neuralNet, x, y):
+    py.sprite.Sprite.__init__(self)
     if neuralNet:
       brain = nn.NeuralNetwork(neuralNet[0], neuralNet[1])
+    
+    self.image = py.Surface((16, 16))
+    self.image.fill((255, 255, 0))
+    self.rect=self.image.get_rect()
+    self.rect.topleft = vec(x*16,y*16)
     self.x = x
     self.y = y
 
@@ -29,22 +37,38 @@ class Pacman():
     if move == 0:
       if self.y < maxY and board[self.y+1][self.x] == 0:
         self.y += 1
+        self.rect.top += 16
     if move == 1:
-      if self.y > 0 and board[self.y-1][self.x] == 0:
-        self.y -= 1
+        if self.y > 0 and board[self.y-1][self.x] == 0:
+          self.y -= 1
+          self.rect.top -= 16
+
     if move == 2:
       if self.x < maxX and board[self.y][self.x+1] == 0:
         self.x += 1
+        self.rect.left += 16
     if move == 3:
+
       if self.x > 0 and board[self.y][self.x-1] == 0:
         self.x -= 1
-    
+        self.rect.left -= 16
 
-class Ghost():
+  def draw(self):
+    import pdb
+    pdb.set_trace()
+
+class Ghost(py.sprite.Sprite):
   def __init__(self, neuralNet, color, x, y):
+    py.sprite.Sprite.__init__(self)
     if neuralNet:
       brain = nn.NeuralNetwork(neuralNet[0], neuralNet[1])
     self.color = color
+    
+    self.image = py.Surface((16, 16))
+    self.image.fill((255, 0, 0))
+    self.rect=self.image.get_rect()
+    self.rect.topleft = vec(x*16,y*16)
+
     self.x = x
     self.y = y
   
@@ -56,12 +80,18 @@ class Ghost():
     if move == 0:
       if self.y < maxY and board[self.y+1][self.x] == 0:
         self.y += 1
+        self.rect.top += 16
     if move == 1:
-      if self.y > 0 and board[self.y-1][self.x] == 0:
-        self.y -= 1
+        if self.y > 0 and board[self.y-1][self.x] == 0:
+          self.y -= 1
+          self.rect.top -= 16
+
     if move == 2:
       if self.x < maxX and board[self.y][self.x+1] == 0:
         self.x += 1
+        self.rect.left += 16
     if move == 3:
+
       if self.x > 0 and board[self.y][self.x-1] == 0:
         self.x -= 1
+        self.rect.left -= 16

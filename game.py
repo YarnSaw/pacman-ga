@@ -10,11 +10,21 @@ import pygame as py
 
 class Game():
   def __init__(self, render, screen, clock, pacmanNet):
+    # Define general pygame requirements
     self.render = render
     self.screen = screen
     self.clock = clock
-    self.pacman = entities.Pacman(None, 9, 4);
-    self.ghosts = [entities.Ghost(None, 'red', 0, 4)]
+
+    # Define Entities
+    self.pacman = entities.Pacman(None, 4, 9);
+    self.ghosts = [entities.Ghost(None, 'red', 9, 0)]
+
+    # add entities to group that will draw them
+    self.allSprites = py.sprite.Group()
+    self.allSprites.add(self.pacman)
+    for i in range(len(self.ghosts)):
+      self.allSprites.add(self.ghosts[i])
+
     # The pacman playing board. Current idea for functionality is having it be a 2d array,
     # where 0=empty, 1=wall
     self.board = [[0 for i in range(10)] for j in range(10)] 
@@ -60,5 +70,12 @@ class Game():
     
     # Limit frames per second (comment out to uncap)
     self.clock.tick(settings.FPS)
+    
+    self.screen.fill((255,255,255))
+
+
+    self.allSprites.draw(self.screen)
+    py.display.update()
+
   
     
