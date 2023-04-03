@@ -51,11 +51,7 @@ class Pacman(py.sprite.Sprite):
   def __init__(self, nnWeights, startPos):
     py.sprite.Sprite.__init__(self)
     if not nnWeights is None:
-      w1 = nnWeights[0:settings.inputSize * settings.hiddenSize].reshape(settings.inputSize, settings.hiddenSize)
-      w2 = nnWeights[settings.inputSize * settings.hiddenSize:].reshape(settings.hiddenSize, settings.outputSize)
-
-      self.brain = nn.NeuralNetwork(w1, w2)
-      self.movement = "ai"
+      self.assignNewNet(nnWeights)
     else:
       self.movement = "random"
     
@@ -81,6 +77,13 @@ class Pacman(py.sprite.Sprite):
         # so use random numbers for input
         move = self.brain.forward(np.random.rand(1,settings.inputSize))
         genericMove(self, board, move)
+
+  def assignNewNet(self, nnWeights):
+    w1 = nnWeights[0:settings.inputSize * settings.hiddenSize].reshape(settings.inputSize, settings.hiddenSize)
+    w2 = nnWeights[settings.inputSize * settings.hiddenSize:].reshape(settings.hiddenSize, settings.outputSize)
+
+    self.brain = nn.NeuralNetwork(w1, w2)
+    self.movement = "ai"
 
   def reset(self):
     self.rect.topleft = vec(self.startPos[0]*16,self.startPos[1]*16)

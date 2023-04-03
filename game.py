@@ -66,6 +66,9 @@ class Game():
 
     pass
 
+  def assignPopToGame(self, pacmanNet):
+    self.pacman.assignNewNet(pacmanNet)
+
   def reset(self):
     '''
     Reset the game so it can be used for a new generation.
