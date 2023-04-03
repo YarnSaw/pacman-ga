@@ -7,9 +7,16 @@ We may want to include the walls as entities, or we may include them directly in
 depending on how complex operations including walls end up.
 '''
 
+import nn
+import pygame as py
+
 class Pacman():
-  def __init__(self):
-    pass
+  '''
+  neuralNet = None if human player.
+  '''
+  def __init__(self, neuralNet):
+    if neuralNet:
+      brain = nn.NeuralNetwork(neuralNet[0], neuralNet[1])
 
 class Ghost():
   def __init__(self, color):

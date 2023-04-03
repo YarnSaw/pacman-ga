@@ -9,3 +9,20 @@ about the neural networks that the genes represent (will need to be changed if m
 algorithms are used).
 '''
 
+class GeneticAlgorithm():
+  def __init__(self, popSize, mutationRate):
+    self.popSize = popSize
+    self.mutationRate = mutationRate
+    self.population = [] 
+
+  def mutate(self, member):
+    pass
+  
+  def parentSelection(self):
+    pass
+  
+  def crossover(self):
+    pass
+  
+  def nextGeneration(self, fitnesses):
+    pass

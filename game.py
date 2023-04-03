@@ -6,7 +6,7 @@ so we may not want to render during training.
 '''
 
 import entities
-
+import pygame as py
 
 class Game():
   def __init__(self, render):
@@ -16,7 +16,7 @@ class Game():
 
 
   def run(self):
-    pass
+    return 1 # return the fitness
 
   def timestep(self):
     '''
