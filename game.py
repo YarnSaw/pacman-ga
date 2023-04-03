@@ -15,9 +15,12 @@ class Game():
     self.screen = screen
     self.clock = clock
 
+    self.pacmanStart = (4,9)
+    self.ghostStart = (4,0)
+
     # Define Entities
-    self.pacman = entities.Pacman(None, 4, 9);
-    self.ghosts = [entities.Ghost(None, 'red', 9, 0)]
+    self.pacman = entities.Pacman(None, self.pacmanStart);
+    self.ghosts = [entities.Ghost(None, 'red', self.ghostStart)]
 
     # add entities to group that will draw them
     self.allSprites = py.sprite.Group()
@@ -53,25 +56,32 @@ class Game():
     for ghost in self.ghosts:
       ghost.update(self.board)
     
-    # Detect collisions here
+    # Detect collisions
+    for ghost in self.ghosts:
+      if self.pacman.x == ghost.x and self.pacman.y == ghost.y:
+        print("RIP pacman is dead")
+        self.pacman.living = False
+        self.pacman.image.fill(settings.colors['white'])
+        self.pacman.x = 10000 # off the screen so the RIP message won't be spammed
 
     pass
 
   def reset(self):
     '''
     Reset the game so it can be used for a new generation.
-    Alternatively, we may want to just delete the instance and create a new one. Whichever is faster
     '''
-    pass
+    self.pacman.reset()
+    for ghost in self.ghosts:
+      ghost.reset()
 
   def draw(self):
     if not self.render:
       return
     
     # Limit frames per second (comment out to uncap)
-    self.clock.tick(settings.FPS)
+    # self.clock.tick(1)
     
-    self.screen.fill((255,255,255))
+    self.screen.fill(settings.colors['white'])
 
 
     self.allSprites.draw(self.screen)
