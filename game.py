@@ -5,17 +5,26 @@ The game will have an option to render or not, since rending is computationally 
 so we may not want to render during training.
 '''
 
-import entities
+import entities, settings
 import pygame as py
 
 class Game():
-  def __init__(self, render):
+  def __init__(self, render, screen, clock, pacmanNet):
     self.render = render
-    self.pacman = entities.Pacman()
-    self.ghosts = [entities.Ghost('red')]
+    self.screen = screen
+    self.clock = clock
+    self.pacman = entities.Pacman(None, 9, 4);
+    self.ghosts = [entities.Ghost(None, 'red', 0, 4)]
+    # The pacman playing board. Current idea for functionality is having it be a 2d array,
+    # where 0=empty, 1=wall
+    self.board = [[0 for i in range(10)] for j in range(10)] 
 
 
-  def run(self):
+  def run(self, iterations):
+    for i in range(iterations):
+      self.timestep()
+      self.draw()
+
     return 1 # return the fitness
 
   def timestep(self):
@@ -30,6 +39,12 @@ class Game():
     each integer value locations, at which point we perform collision detection between pacman and the ghosts, as well as let
     each entity pick a new direction to move. 
     '''
+    self.pacman.update(self.board)
+    for ghost in self.ghosts:
+      ghost.update(self.board)
+    
+    # Detect collisions here
+
     pass
 
   def reset(self):
@@ -40,7 +55,10 @@ class Game():
     pass
 
   def draw(self):
-    if (self.render):
-      pass
+    if not self.render:
+      return
+    
+    # Limit frames per second (comment out to uncap)
+    self.clock.tick(settings.FPS)
   
-  
+    

@@ -13,7 +13,7 @@ class GeneticAlgorithm():
   def __init__(self, popSize, mutationRate):
     self.popSize = popSize
     self.mutationRate = mutationRate
-    self.population = [] 
+    self.population = [[] for i in range(popSize)] 
 
   def mutate(self, member):
     pass
