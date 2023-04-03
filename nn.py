@@ -10,10 +10,10 @@ class NeuralNetwork():
     self.w2 = w2
   
   def forward(self, input):
-    h1 = input * self.w1
+    h1 = np.matmul(input, self.w1)
     # may want some form of activation function here
-    output = h1 * self.w2
+    output = np.matmul(h1, self.w2)
     #almost certainly want an activation function here
-    return output
+    return np.argmax(output)
 
   # the network does not need backpropagation to learn, that's what the GA is for

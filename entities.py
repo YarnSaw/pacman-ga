@@ -7,21 +7,57 @@ We may want to include the walls as entities, or we may include them directly in
 depending on how complex operations including walls end up.
 '''
 
-import nn
+import nn, settings
 import pygame as py
+import numpy as np
 import random
-import settings
 vec=py.math.Vector2
+
+
+'''
+Currently, updating both the x/y and the rect for the entity
+at the same time. When we want to go to a smoother animation and 
+have the entity move smoother on the field, these will need to be
+separated. Always change the x/y by 1, while the rectangle increases
+by 16 to complete the visual movement.
+'''
+def genericMove(entity, board, move):
+  maxX = len(board[0])-1
+  maxY = len(board)-1
+
+  if move == 0:
+    if entity.y < maxY and board[entity.y+1][entity.x] == 0:
+      entity.y += 1
+      entity.rect.top += 16
+  if move == 1:
+      if entity.y > 0 and board[entity.y-1][entity.x] == 0:
+        entity.y -= 1
+        entity.rect.top -= 16
+
+  if move == 2:
+    if entity.x < maxX and board[entity.y][entity.x+1] == 0:
+      entity.x += 1
+      entity.rect.left += 16
+  if move == 3:
+    if entity.x > 0 and board[entity.y][entity.x-1] == 0:
+      entity.x -= 1
+      entity.rect.left -= 16
 
 
 class Pacman(py.sprite.Sprite):
   '''
   neuralNet = None if human player.
   '''
-  def __init__(self, neuralNet, startPos):
+  def __init__(self, nnWeights, startPos):
     py.sprite.Sprite.__init__(self)
-    if neuralNet:
-      brain = nn.NeuralNetwork(neuralNet[0], neuralNet[1])
+    if not nnWeights is None:
+      w1 = nnWeights[0:settings.inputSize * settings.hiddenSize].reshape(settings.inputSize, settings.hiddenSize)
+      w2 = nnWeights[settings.inputSize * settings.hiddenSize:].reshape(settings.hiddenSize, settings.outputSize)
+
+      self.brain = nn.NeuralNetwork(w1, w2)
+      self.movement = "ai"
+    else:
+      self.movement = "random"
     
     self.image = py.Surface((16, 16))
     self.image.fill(settings.colors['yellow'])
@@ -34,30 +70,17 @@ class Pacman(py.sprite.Sprite):
     self.living = True
 
   def update(self, board):
-    maxX = len(board[0])-1
-    maxY = len(board)-1
-
     if self.living:
       # Temporary: random movement
-      move = random.randint(0,3)
-      if move == 0:
-        if self.y < maxY and board[self.y+1][self.x] == 0:
-          self.y += 1
-          self.rect.top += 16
-      if move == 1:
-          if self.y > 0 and board[self.y-1][self.x] == 0:
-            self.y -= 1
-            self.rect.top -= 16
+      if self.movement == 'random':
+        move = random.randint(0,3)
+        genericMove(self, board, move)
 
-      if move == 2:
-        if self.x < maxX and board[self.y][self.x+1] == 0:
-          self.x += 1
-          self.rect.left += 16
-      if move == 3:
-
-        if self.x > 0 and board[self.y][self.x-1] == 0:
-          self.x -= 1
-          self.rect.left -= 16
+      elif self.movement == 'ai':
+        # don't have logic for determining other entities positions,
+        # so use random numbers for input
+        move = self.brain.forward(np.random.rand(1,settings.inputSize))
+        genericMove(self, board, move)
 
   def reset(self):
     self.rect.topleft = vec(self.startPos[0]*16,self.startPos[1]*16)
@@ -86,28 +109,10 @@ class Ghost(py.sprite.Sprite):
 
   
   def update(self, board):
-    maxX = len(board[0])-1
-    maxY = len(board)-1
     # Temporary: random movement
     move = random.randint(0,3)
-    if move == 0:
-      if self.y < maxY and board[self.y+1][self.x] == 0:
-        self.y += 1
-        self.rect.top += 16
-    if move == 1:
-        if self.y > 0 and board[self.y-1][self.x] == 0:
-          self.y -= 1
-          self.rect.top -= 16
 
-    if move == 2:
-      if self.x < maxX and board[self.y][self.x+1] == 0:
-        self.x += 1
-        self.rect.left += 16
-    if move == 3:
-
-      if self.x > 0 and board[self.y][self.x-1] == 0:
-        self.x -= 1
-        self.rect.left -= 16
+    genericMove(self, board, move)
         
   def reset(self):
     self.rect.topleft = vec(self.startPos[0]*16,self.startPos[1]*16)

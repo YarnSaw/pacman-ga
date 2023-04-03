@@ -8,12 +8,13 @@ the genes of it's population, as well as fitness values returned. It doesn't eve
 about the neural networks that the genes represent (will need to be changed if more advanced
 algorithms are used).
 '''
+import numpy as np
 
 class GeneticAlgorithm():
-  def __init__(self, popSize, mutationRate):
+  def __init__(self, popSize, geneSize, mutationRate):
     self.popSize = popSize
     self.mutationRate = mutationRate
-    self.population = [[] for i in range(popSize)] 
+    self.population = np.random.normal(size=(popSize,geneSize))
 
   def mutate(self, member):
     pass

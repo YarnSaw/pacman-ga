@@ -19,7 +19,7 @@ class Game():
     self.ghostStart = (4,0)
 
     # Define Entities
-    self.pacman = entities.Pacman(None, self.pacmanStart);
+    self.pacman = entities.Pacman(pacmanNet, self.pacmanStart);
     self.ghosts = [entities.Ghost(None, 'red', self.ghostStart)]
 
     # add entities to group that will draw them
@@ -79,7 +79,7 @@ class Game():
       return
     
     # Limit frames per second (comment out to uncap)
-    # self.clock.tick(1)
+    self.clock.tick(settings.FPS)
     
     self.screen.fill(settings.colors['white'])
 
