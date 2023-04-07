@@ -23,14 +23,12 @@ class GeneticAlgorithm():
   def mutate(self, individual):
     mutant = individual.copy()
 
-    # Amount to add
-    change = (random.random()*2 - 1) * settings.R
-
-    # Weight to add random value to
-    idx = random.randrange(0, len(mutant))
-
-    # Update weight
-    mutant[idx] = mutant[idx] + change
+    for i in range(len(individual)):
+      m = random.random()
+      
+      if m < settings.MUT_RATE:
+        change = random.gauss(0, settings.R)
+        mutant[i] = mutant[i] + change
 
     return mutant
 
