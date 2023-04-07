@@ -40,8 +40,8 @@ class Game():
       self.draw()
 
     fitness = [] # List of ghost fitnesses, followed by pacman's fitness at the end. SUBJECT TO CHANGE
-    for i in self.ghosts:
-      fitness.append(AStar.astar(self.board, (self.ghosts[i].x, self.ghosts[i].y), (self.pacman.x, self.pacman.y)))
+    for g in self.ghosts:
+      fitness.append(AStar.astar(self.board, (g.x, g.y), (self.pacman.x, self.pacman.y)))
     fitness.append(min(fitness)) #pacman's fitness is the distance from the closest ghost
 
     return fitness # return the fitness
