@@ -14,11 +14,17 @@ import settings
 
 
 class GeneticAlgorithm():
-  def __init__(self, popSize, geneSize, mutationRate):
+  def __init__(self, maximize=True, popSize=settings.populationSize, geneSize=settings.geneSize, mutationRate=settings.MUT_RATE):
     self.popSize = popSize
     self.mutationRate = mutationRate
-    self.population = np.random.normal(size=(popSize,geneSize))
+    self.parent = np.random.normal(size=(popSize,geneSize))
+    self.offspring = self.parent                          # in the first generation, think of the new random pop as all offspring.
 
+    self.parentFitness = [0 for _ in range(popSize)]          # Doesn't matter, first iteration is all 'offspring'
+    self.offspringFitness = [0 for _ in range(popSize)]       # Will be immediately replaced in first iteration
+
+    self.maximize = maximize
+    self.firstGen = True
 
   def mutate(self, individual):
     mutant = individual.copy()
@@ -33,7 +39,7 @@ class GeneticAlgorithm():
     return mutant
 
   
-  def parentSelection(self, fitness, mating_pool_size, tournament_size=settings.TOURNAMENT_SIZE, maximize=True):
+  def parentSelection(self, mating_pool_size=settings.mating_pool_size, tournament_size=settings.TOURNAMENT_SIZE):
     """Tournament selection without replacement"""
 
     selected_to_mate = []
@@ -42,12 +48,12 @@ class GeneticAlgorithm():
     while len(selected_to_mate) < mating_pool_size:
       # Select <tournament_size> random individuals (without replacement, so 
       # each individual will be different)
-      tournament = random.sample(range(0, len(fitness)), tournament_size)
+      tournament = random.sample(range(0, len(self.parentFitness)), tournament_size)
       best = tournament[0]
 
-      # Find the best individual in the tournament (based on the fitness)
+      # Find the best individual in the tournament (based on the self.parentFitness)
       for i in tournament:
-        if (fitness[i] > fitness[best]) == maximize:
+        if (self.parentFitness[i] > self.parentFitness[best]) == self.maximize:
           best = i
       
       selected_to_mate.append(best)
@@ -66,28 +72,53 @@ class GeneticAlgorithm():
     return p1, p2
   
 
-  def survivor_selection(self, current_pop, current_fitness, offspring, offspring_fitness, maximize=True):
+  def survivor_selection(self, maximize=True):
     """mu+lambda selection"""
 
     population = []
     fitness = []
 
-    pooled_pop = [i for i in range(current_pop.shape[0] + offspring.shape[0])]
-    pooled_fitness = current_fitness + offspring_fitness
+    pooled_pop = [i for i in range(self.parent.shape[0] + self.offspring.shape[0])]
+    pooled_fitness = self.parentFitness + self.offspringFitness
 
     ranked_pop = [x for _, x in sorted(zip(pooled_fitness, pooled_pop), reverse=maximize)]
-    fitness = sorted(pooled_fitness, reverse=maximize)[0:len(current_fitness)]
+    fitness = sorted(pooled_fitness, reverse=maximize)[0:len(self.parentFitness)]
 
     # Get the best mu individuals where mu is the size of the current population (without offspring)
-    population = np.zeros(current_pop.shape)
-    for i in range(len(ranked_pop[:current_pop.shape[0]])):
+    population = np.zeros(self.parent.shape)
+    for i in range(len(ranked_pop[:self.parent.shape[0]])):
       try:
-        population[i] = current_pop[ranked_pop[i]]
+        population[i] = self.parent[ranked_pop[i]]
       except (IndexError):
-        population[i] = offspring[ranked_pop[i] - current_pop.shape[0]]
+        population[i] = self.offspring[ranked_pop[i] - self.parent.shape[0]]
     
-    return population, fitness
-  
+    self.parent = population
+    self.parentFitness = fitness
+
+  def nextGeneration(self, offspringFitness):
+    if self.firstGen:
+      self.parentFitness = offspringFitness
+      self.firstGen = False
+    else:
+      self.offspringFitness = offspringFitness
+      self.survivor_selection()
+
+    parents = self.parentSelection()
+    offspring = []
+    for i in range(0, len(parents), 2):
+      if random.random() < settings.XOVER_RATE:
+        off1,off2 = self.crossover(self.parent[parents[i]], self.parent[parents[i+1]])
+      else:
+        off1 = self.parent[parents[i]].copy()
+        off2 = self.parent[parents[i+1]].copy()
+      
+      offspring.append(self.mutate(off1))
+      offspring.append(self.mutate(off2))
+
+    self.offspring = np.array(offspring)
+
+
+      
 
 if __name__ == "__main__":
   # Test

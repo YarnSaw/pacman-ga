@@ -10,7 +10,7 @@ import pygame as py
 import AStar
 
 class Game():
-  def __init__(self, render, screen, clock, pacmanNet):
+  def __init__(self, render, screen, clock, pacmanNet, ghostNets):
     # Define general pygame requirements
     self.render = render
     self.screen = screen
@@ -21,7 +21,7 @@ class Game():
 
     # Define Entities
     self.pacman = entities.Pacman(pacmanNet, self.pacmanStart);
-    self.ghosts = [entities.Ghost(None, 'red', self.ghostStart)]
+    self.ghosts = [entities.Ghost(ghostNets[g], 'red', self.ghostStart) for g in range(settings.ghostCount)]
 
     # add entities to group that will draw them
     self.allSprites = py.sprite.Group()
@@ -34,14 +34,19 @@ class Game():
     self.board = [[0 for i in range(10)] for j in range(10)] 
 
 
-  def run(self, iterations):
+  def run(self, iterations=settings.iterationsPerGen):
     for i in range(iterations):
       self.timestep()
       self.draw()
+      if not self.pacman.living:
+        break # no need to waste computation
 
     fitness = [] # List of ghost fitnesses, followed by pacman's fitness at the end. SUBJECT TO CHANGE
     for g in self.ghosts:
-      fitness.append(AStar.astar(self.board, (g.x, g.y), (self.pacman.x, self.pacman.y)))
+      if self.pacman.living:
+        fitness.append(AStar.astar(self.board, (g.x, g.y), (self.pacman.x, self.pacman.y)))
+      else:
+        fitness.append(0)
     fitness.append(min(fitness)) #pacman's fitness is the distance from the closest ghost
 
     return fitness # return the fitness
@@ -72,8 +77,10 @@ class Game():
 
     pass
 
-  def assignPopToGame(self, pacmanNet):
+  def assignPopToGame(self, pacmanNet, ghostNets):
     self.pacman.assignNewNet(pacmanNet)
+    for i in range(len(self.ghosts)):
+      self.ghosts[i].assignNewNet(ghostNets[i])
 
   def reset(self):
     '''

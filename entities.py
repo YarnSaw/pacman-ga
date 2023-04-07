@@ -97,9 +97,10 @@ class Pacman(py.sprite.Sprite):
 class Ghost(py.sprite.Sprite):
   def __init__(self, neuralNet, color, startPos):
     py.sprite.Sprite.__init__(self)
-    if neuralNet:
-      brain = nn.NeuralNetwork(neuralNet[0], neuralNet[1])
-    self.color = color
+    if not neuralNet is None:
+      self.assignNewNet(neuralNet)
+    else:
+      self.movement = "random"
     
     self.image = py.Surface((16, 16))
     self.image.fill(settings.colors[color])
@@ -110,12 +111,24 @@ class Ghost(py.sprite.Sprite):
     self.y = startPos[1]
     self.startPos = startPos
 
+  def assignNewNet(self, nnWeights):
+    w1 = nnWeights[0:settings.inputSize * settings.hiddenSize].reshape(settings.inputSize, settings.hiddenSize)
+    w2 = nnWeights[settings.inputSize * settings.hiddenSize:].reshape(settings.hiddenSize, settings.outputSize)
+
+    self.brain = nn.NeuralNetwork(w1, w2)
+    self.movement = "ai"
   
   def update(self, board):
     # Temporary: random movement
-    move = random.randint(0,3)
+    if self.movement == 'random':
+      move = random.randint(0,3)
+      genericMove(self, board, move)
 
-    genericMove(self, board, move)
+    elif self.movement == 'ai':
+      # don't have logic for determining other entities positions,
+      # so use random numbers for input
+      move = self.brain.forward(np.random.rand(1,settings.inputSize))
+      genericMove(self, board, move)
         
   def reset(self):
     self.rect.topleft = vec(self.startPos[0]*16,self.startPos[1]*16)
