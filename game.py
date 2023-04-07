@@ -63,14 +63,32 @@ class Game():
     each integer value locations, at which point we perform collision detection between pacman and the ghosts, as well as let
     each entity pick a new direction to move. 
     '''
-    self.pacman.update(self.board)
+
+    # @TODO:
+    # currently giving absolute values for the location of each entity. Learning may be better generalized 
+    # by giving relative locations, however walls may mess this strategy up. Need to test to see what works best.
+
+    locations = []
     for ghost in self.ghosts:
-      ghost.update(self.board)
+      locations.append(ghost.x)
+      locations.append(ghost.y)
+    self.pacman.update(self.board, locations)
+
+    for i in range(len(self.ghosts)):
+      locations = []
+      for j in range(len(self.ghosts)):
+        if i == j:
+          locations.append(self.pacman.x)
+          locations.append(self.pacman.y)
+        else:
+          locations.append(self.ghosts[j].x)
+          locations.append(self.ghosts[j].y)
+      ghost.update(self.board, locations)
     
     # Detect collisions
     for ghost in self.ghosts:
       if self.pacman.x == ghost.x and self.pacman.y == ghost.y:
-        print("RIP pacman is dead")
+        # print("RIP pacman is dead")
         self.pacman.living = False
         self.pacman.image.fill(settings.colors['white'])
         self.pacman.x = 10000 # off the screen so the RIP message won't be spammed

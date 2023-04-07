@@ -72,7 +72,7 @@ class GeneticAlgorithm():
     return p1, p2
   
 
-  def survivor_selection(self, maximize=True):
+  def survivor_selection(self):
     """mu+lambda selection"""
 
     population = []
@@ -81,8 +81,8 @@ class GeneticAlgorithm():
     pooled_pop = [i for i in range(self.parent.shape[0] + self.offspring.shape[0])]
     pooled_fitness = self.parentFitness + self.offspringFitness
 
-    ranked_pop = [x for _, x in sorted(zip(pooled_fitness, pooled_pop), reverse=maximize)]
-    fitness = sorted(pooled_fitness, reverse=maximize)[0:len(self.parentFitness)]
+    ranked_pop = [x for _, x in sorted(zip(pooled_fitness, pooled_pop), reverse=self.maximize)]
+    fitness = sorted(pooled_fitness, reverse=self.maximize)[0:len(self.parentFitness)]
 
     # Get the best mu individuals where mu is the size of the current population (without offspring)
     population = np.zeros(self.parent.shape)

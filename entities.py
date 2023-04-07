@@ -65,7 +65,7 @@ class Pacman(py.sprite.Sprite):
 
     self.living = True
 
-  def update(self, board):
+  def update(self, board, entityLocations):
     if self.living:
       # Temporary: random movement
       if self.movement == 'random':
@@ -75,7 +75,7 @@ class Pacman(py.sprite.Sprite):
       elif self.movement == 'ai':
         # don't have logic for determining other entities positions,
         # so use random numbers for input
-        move = self.brain.forward(np.random.rand(1,settings.inputSize))
+        move = self.brain.forward(entityLocations)
         genericMove(self, board, move)
 
   def assignNewNet(self, nnWeights):
@@ -118,7 +118,7 @@ class Ghost(py.sprite.Sprite):
     self.brain = nn.NeuralNetwork(w1, w2)
     self.movement = "ai"
   
-  def update(self, board):
+  def update(self, board, entityLocations):
     # Temporary: random movement
     if self.movement == 'random':
       move = random.randint(0,3)
@@ -127,7 +127,7 @@ class Ghost(py.sprite.Sprite):
     elif self.movement == 'ai':
       # don't have logic for determining other entities positions,
       # so use random numbers for input
-      move = self.brain.forward(np.random.rand(1,settings.inputSize))
+      move = self.brain.forward(entityLocations)
       genericMove(self, board, move)
         
   def reset(self):

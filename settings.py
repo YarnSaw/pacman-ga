@@ -17,7 +17,7 @@ iterationsPerGen=100
 ghostCount = 1
 
 # NEURAL NETWORK SETTINGS
-inputSize = 8 # relative position of all other entities
+inputSize = ghostCount*2 # relative position of all other entities
 hiddenSize = 10 # arbitrarily chosen
 outputSize = 4 # 4 possible actions
 
