@@ -10,7 +10,7 @@ import pygame as py
 import AStar
 
 class Game():
-  def __init__(self, render, screen, clock, pacmanNet):
+  def __init__(self, render, screen, clock, pacmanNet, ghostNets):
     # Define general pygame requirements
     self.render = render
     self.screen = screen

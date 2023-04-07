@@ -12,15 +12,15 @@ if renderAny:
   clock = py.time.Clock()
 
 if __name__ == "__main__":
-  '''
-  Currently have a slightly pseudo-code main loop, meant to show the structure of what we want here.
-  Note this structure only has 1 GA at the moment, we will need 4 more, for each of the ghosts.
-  '''
-  GA = genetic.GeneticAlgorithm()
+  pacmanGA = genetic.GeneticAlgorithm()
+  ghostGAs = []
+  for ghost in range(settings.ghostCount):
+    ghostGAs.append(genetic.GeneticAlgorithm())
+
   # somewhere in here we need to make sure the gene -> weights conversion is done.
   # the genome will probably be a single array of i*h + h*o length, while the nn needs that broken into 2
   # 2D arrays, one i by h and the other h by o in size.
-  games = [game.Game(False, screen, clock, GA.population[i]) for i in range(settings.populationSize)]
+  games = [game.Game(False, screen, clock, pacmanGA.offspring[i], [ghostGAs[j].offspring[i] for j in range(settings.ghostCount)]) for i in range(settings.populationSize)]
   if renderAny:
     games[0].render = True
 
@@ -36,4 +36,9 @@ if __name__ == "__main__":
       pacmanFitness.append(fitnesses[-1])
       g.reset()
     
-    GA.nextGeneration(pacmanFitness)
+    # Get new population
+    pacmanGA.nextGeneration(pacmanFitness)
+    for ghost in range(settings.ghostCount):
+      ghostGAs[ghost].nextGeneration(ghostFitnesses[ghost])
+
+    
