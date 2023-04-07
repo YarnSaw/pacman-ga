@@ -14,7 +14,7 @@ import settings
 
 
 class GeneticAlgorithm():
-  def __init__(self, popSize, geneSize, mutationRate):
+  def __init__(self, popSize=settings.populationSize, geneSize=settings.geneSize, mutationRate=settings.MUT_RATE):
     self.popSize = popSize
     self.mutationRate = mutationRate
     self.population = np.random.normal(size=(popSize,geneSize))
@@ -35,7 +35,7 @@ class GeneticAlgorithm():
     return mutant
 
   
-  def parentSelection(self, fitness, mating_pool_size, tournament_size=settings.TOURNAMENT_SIZE, maximize=True):
+  def parentSelection(self, fitness, mating_pool_size=settings.mating_pool_size, tournament_size=settings.TOURNAMENT_SIZE, maximize=True):
     """Tournament selection without replacement"""
 
     selected_to_mate = []
@@ -89,6 +89,9 @@ class GeneticAlgorithm():
         population[i] = offspring[ranked_pop[i] - current_pop.shape[0]]
     
     return population, fitness
+
+  def nextGeneration(fitness):
+    pass
   
 
 if __name__ == "__main__":

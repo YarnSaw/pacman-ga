@@ -21,7 +21,7 @@ class Game():
 
     # Define Entities
     self.pacman = entities.Pacman(pacmanNet, self.pacmanStart);
-    self.ghosts = [entities.Ghost(None, 'red', self.ghostStart)]
+    self.ghosts = [entities.Ghost(None, 'red', self.ghostStart) for g in range(settings.ghostCount)]
 
     # add entities to group that will draw them
     self.allSprites = py.sprite.Group()
@@ -34,14 +34,18 @@ class Game():
     self.board = [[0 for i in range(10)] for j in range(10)] 
 
 
-  def run(self, iterations):
+  def run(self, iterations=settings.iterationsPerGen):
     for i in range(iterations):
       self.timestep()
       self.draw()
 
     fitness = [] # List of ghost fitnesses, followed by pacman's fitness at the end. SUBJECT TO CHANGE
     for g in self.ghosts:
-      fitness.append(AStar.astar(self.board, (g.x, g.y), (self.pacman.x, self.pacman.y)))
+      if self.pacman.living:
+        fitness.append(AStar.astar(self.board, (g.x, g.y), (self.pacman.x, self.pacman.y)))
+      else:
+        fitness.append(0)
+      print(g)
     fitness.append(min(fitness)) #pacman's fitness is the distance from the closest ghost
 
     return fitness # return the fitness
