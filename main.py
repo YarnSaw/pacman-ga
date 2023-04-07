@@ -15,7 +15,7 @@ if __name__ == "__main__":
   pacmanGA = genetic.GeneticAlgorithm()
   ghostGAs = []
   for ghost in range(settings.ghostCount):
-    ghostGAs.append(genetic.GeneticAlgorithm())
+    ghostGAs.append(genetic.GeneticAlgorithm(maximize=False))
 
   # somewhere in here we need to make sure the gene -> weights conversion is done.
   # the genome will probably be a single array of i*h + h*o length, while the nn needs that broken into 2
@@ -26,10 +26,11 @@ if __name__ == "__main__":
 
   for gen in range(settings.generations):
     print(gen+1)
+
+    # Run the games, evaluate fitness
     ghostFitnesses = [[] for g in range(settings.ghostCount)]
     pacmanFitness = []
     for g in games:
-
       fitnesses = g.run()
       for i in range(settings.ghostCount):
         ghostFitnesses[i].append(fitnesses[i])
@@ -40,5 +41,14 @@ if __name__ == "__main__":
     pacmanGA.nextGeneration(pacmanFitness)
     for ghost in range(settings.ghostCount):
       ghostGAs[ghost].nextGeneration(ghostFitnesses[ghost])
-
     
+    # Prune games (if needed)
+    if len(games) > len(pacmanGA.offspring):
+      games = games[0:len(pacmanGA.offspring)]
+    # new game fields (if needed)
+    elif len(pacmanGA.offspring) > len(games):
+      games = games + [game.Game(False, screen, clock, pacmanGA.offspring[i], [ghostGAs[j].offspring[i] for j in range(settings.ghostCount)]) for i in range(len(games), len(pacmanGA.offspring))]
+
+    # assign offspring to each game field, so next iteration runs all of them.
+    for i in range(len(games)):
+      games[i].assignPopToGame(pacmanGA.offspring[i], [ghostGAs[j].offspring[i] for j in range(settings.ghostCount)])

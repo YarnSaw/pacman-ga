@@ -14,7 +14,7 @@ import settings
 
 
 class GeneticAlgorithm():
-  def __init__(self, popSize=settings.populationSize, geneSize=settings.geneSize, mutationRate=settings.MUT_RATE):
+  def __init__(self, maximize=True, popSize=settings.populationSize, geneSize=settings.geneSize, mutationRate=settings.MUT_RATE):
     self.popSize = popSize
     self.mutationRate = mutationRate
     self.parent = np.random.normal(size=(popSize,geneSize))
@@ -23,8 +23,8 @@ class GeneticAlgorithm():
     self.parentFitness = [0 for _ in range(popSize)]          # Doesn't matter, first iteration is all 'offspring'
     self.offspringFitness = [0 for _ in range(popSize)]       # Will be immediately replaced in first iteration
 
-    self.firstGeneration = True                               # handle the fact that the first generation is unique.
-
+    self.maximize = maximize
+    self.firstGen = True
 
   def mutate(self, individual):
     mutant = individual.copy()
@@ -41,7 +41,7 @@ class GeneticAlgorithm():
     return mutant
 
   
-  def parentSelection(self, mating_pool_size=settings.mating_pool_size, tournament_size=settings.TOURNAMENT_SIZE, maximize=True):
+  def parentSelection(self, mating_pool_size=settings.mating_pool_size, tournament_size=settings.TOURNAMENT_SIZE):
     """Tournament selection without replacement"""
 
     selected_to_mate = []
@@ -55,7 +55,7 @@ class GeneticAlgorithm():
 
       # Find the best individual in the tournament (based on the self.parentFitness)
       for i in tournament:
-        if (self.parentFitness[i] > self.parentFitness[best]) == maximize:
+        if (self.parentFitness[i] > self.parentFitness[best]) == self.maximize:
           best = i
       
       selected_to_mate.append(best)
@@ -98,8 +98,12 @@ class GeneticAlgorithm():
     self.parentFitness = fitness
 
   def nextGeneration(self, offspringFitness):
-    self.offspringFitness = offspringFitness
-    self.survivor_selection()
+    if self.firstGen:
+      self.parentFitness = offspringFitness
+      self.firstGen = False
+    else:
+      self.offspringFitness = offspringFitness
+      self.survivor_selection()
 
     parents = self.parentSelection()
     offspring = []

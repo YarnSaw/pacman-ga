@@ -21,7 +21,7 @@ class Game():
 
     # Define Entities
     self.pacman = entities.Pacman(pacmanNet, self.pacmanStart);
-    self.ghosts = [entities.Ghost(None, 'red', self.ghostStart) for g in range(settings.ghostCount)]
+    self.ghosts = [entities.Ghost(ghostNets[g], 'red', self.ghostStart) for g in range(settings.ghostCount)]
 
     # add entities to group that will draw them
     self.allSprites = py.sprite.Group()
@@ -38,6 +38,8 @@ class Game():
     for i in range(iterations):
       self.timestep()
       self.draw()
+      if not self.pacman.living:
+        break # no need to waste computation
 
     fitness = [] # List of ghost fitnesses, followed by pacman's fitness at the end. SUBJECT TO CHANGE
     for g in self.ghosts:
@@ -75,8 +77,10 @@ class Game():
 
     pass
 
-  def assignPopToGame(self, pacmanNet):
+  def assignPopToGame(self, pacmanNet, ghostNets):
     self.pacman.assignNewNet(pacmanNet)
+    for i in range(len(self.ghosts)):
+      self.ghosts[i].assignNewNet(ghostNets[i])
 
   def reset(self):
     '''
