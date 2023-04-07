@@ -17,3 +17,8 @@ hiddenSize = 10 # arbitrarily chosen
 outputSize = 4 # 4 possible actions
 
 geneSize = inputSize*hiddenSize + hiddenSize*outputSize
+
+XOVER_RATE = 0.9
+MUT_RATE = 0.2
+TOURNAMENT_SIZE = 4
+R = 0.1 # Amount to mutate by
