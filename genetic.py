@@ -28,7 +28,7 @@ class GeneticAlgorithm():
     pass
 
   
-  def parentSelection(self, fitness, mating_pool_size, tournament_size):
+  def parentSelection(self, fitness, mating_pool_size, tournament_size=TOURNAMENT_SIZE):
     """Tournament selection without replacement"""
 
     selected_to_mate = []
@@ -53,9 +53,8 @@ class GeneticAlgorithm():
     pass
 
 
-  def survivor_selection(self, current_pop, current_fitness, offspring, offspring_fitness, fitness_mode="max"):
+  def survivor_selection(self, current_pop, current_fitness, offspring, offspring_fitness, maximize=True):
     """mu+lambda selection"""
-    import pdb; pdb.set_trace()
 
     population = []
     fitness = []
@@ -63,16 +62,7 @@ class GeneticAlgorithm():
     pooled_pop = [i for i in range(current_pop.shape[0] + offspring.shape[0])]
     pooled_fitness = current_fitness + offspring_fitness
 
-    # Rank population based on fitness
-    if fitness_mode == "min":
-      max = False
-    elif fitness_mode == "max":
-      max = True
-    else:
-      print("invalid fitness mode. Should be either min or max.")
-      exit(1)
-
-    ranked_pop = [x for _, x in sorted(zip(pooled_fitness, pooled_pop), reverse=max)]
+    ranked_pop = [x for _, x in sorted(zip(pooled_fitness, pooled_pop), reverse=maximize)]
     fitness = sorted(pooled_fitness, reverse=max)[0:len(current_fitness)]
 
     # Get the best mu individuals where mu is the size of the current population (without offspring)
@@ -98,4 +88,4 @@ if __name__ == "__main__":
   a_fit = [2, 4, 1, 4]
   b_fit = [0, 5, 3]
 
-  print(ga.survivor_selection(a, a_fit, b, b_fit, "min"))
+  print(ga.survivor_selection(a, a_fit, b, b_fit, False))
