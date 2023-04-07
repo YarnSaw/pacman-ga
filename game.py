@@ -45,7 +45,6 @@ class Game():
         fitness.append(AStar.astar(self.board, (g.x, g.y), (self.pacman.x, self.pacman.y)))
       else:
         fitness.append(0)
-      print(g)
     fitness.append(min(fitness)) #pacman's fitness is the distance from the closest ghost
 
     return fitness # return the fitness

@@ -37,4 +37,3 @@ if __name__ == "__main__":
       g.reset()
     
     GA.nextGeneration(pacmanFitness)
-    print("hi")
