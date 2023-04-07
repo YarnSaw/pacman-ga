@@ -7,6 +7,7 @@ so we may not want to render during training.
 
 import entities, settings
 import pygame as py
+import AStar
 
 class Game():
   def __init__(self, render, screen, clock, pacmanNet):
@@ -38,7 +39,12 @@ class Game():
       self.timestep()
       self.draw()
 
-    return 1 # return the fitness
+    fitness = [] # List of ghost fitnesses, followed by pacman's fitness at the end. SUBJECT TO CHANGE
+    for i in self.ghosts:
+      fitness.append(AStar.astar(self.board, (self.ghosts[i].x, self.ghosts[i].y), (self.pacman.x, self.pacman.y)))
+    fitness.append(min(fitness)) #pacman's fitness is the distance from the closest ghost
+
+    return fitness # return the fitness
 
   def timestep(self):
     '''
