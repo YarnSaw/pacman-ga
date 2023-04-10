@@ -36,6 +36,9 @@ if __name__ == "__main__":
         ghostFitnesses[i].append(fitnesses[i])
       pacmanFitness.append(fitnesses[-1])
       g.reset()
+
+    # comment out if too many logs, but useful to verify the ghosts are learning.
+    print("Count of best fitness for generation: ",ghostFitnesses[i].count(0), "out of ", len(ghostFitnesses[i]))
     
     # Get new population
     pacmanGA.nextGeneration(pacmanFitness)

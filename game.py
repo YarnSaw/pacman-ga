@@ -16,7 +16,7 @@ class Game():
     self.screen = screen
     self.clock = clock
 
-    self.pacmanStart = (4,9)
+    self.pacmanStart = (2,9)
     self.ghostStart = (4,0)
 
     # Define Entities
@@ -72,17 +72,11 @@ class Game():
     for ghost in self.ghosts:
       locations.append(ghost.x)
       locations.append(ghost.y)
+    locations.append(self.pacman.x)
+    locations.append(self.pacman.y)
+    
     self.pacman.update(self.board, locations)
-
-    for i in range(len(self.ghosts)):
-      locations = []
-      for j in range(len(self.ghosts)):
-        if i == j:
-          locations.append(self.pacman.x)
-          locations.append(self.pacman.y)
-        else:
-          locations.append(self.ghosts[j].x)
-          locations.append(self.ghosts[j].y)
+    for ghost in self.ghosts:
       ghost.update(self.board, locations)
     
     # Detect collisions
