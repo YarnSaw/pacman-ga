@@ -20,7 +20,7 @@ if __name__ == "__main__":
   # somewhere in here we need to make sure the gene -> weights conversion is done.
   # the genome will probably be a single array of i*h + h*o length, while the nn needs that broken into 2
   # 2D arrays, one i by h and the other h by o in size.
-  games = [game.Game(False, screen, clock, pacmanGA.offspring[i], [ghostGAs[j].offspring[i] for j in range(settings.ghostCount)]) for i in range(settings.populationSize)]
+  games = [game.Game(False, screen, clock, 10, pacmanGA.offspring[i], [ghostGAs[j].offspring[i] for j in range(settings.ghostCount)]) for i in range(settings.populationSize)]
   if renderAny:
     games[0].render = True
 

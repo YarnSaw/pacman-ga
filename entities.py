@@ -48,7 +48,7 @@ class Pacman(py.sprite.Sprite):
   '''
   neuralNet = None if human player.
   '''
-  def __init__(self, nnWeights, startPos):
+  def __init__(self, nnWeights, startPos, offset, imageSheet):
     py.sprite.Sprite.__init__(self)
     if not nnWeights is None:
       self.assignNewNet(nnWeights)
@@ -56,12 +56,15 @@ class Pacman(py.sprite.Sprite):
       self.movement = "random"
     
     self.image = py.Surface((16, 16))
-    self.image.fill(settings.colors['yellow'])
     self.rect=self.image.get_rect()
-    self.rect.topleft = vec(startPos[0]*16,startPos[1]*16)
+    self.image.blit(imageSheet, (0, 0), self.rect)
+    self.image.set_colorkey((0,0,0), py.RLEACCEL)
+
+    self.rect.topleft = vec(startPos[0]*16 + offset[0],startPos[1]*16 + offset[1])
     self.x = startPos[0]
     self.y = startPos[1]
     self.startPos = startPos
+    self.offset = offset
 
     self.living = True
 
@@ -86,16 +89,15 @@ class Pacman(py.sprite.Sprite):
     self.movement = "ai"
 
   def reset(self):
-    self.rect.topleft = vec(self.startPos[0]*16,self.startPos[1]*16)
+    self.rect.topleft = vec(self.startPos[0]*16 + self.offset[0] ,self.startPos[1]*16 + self.offset[1])
     self.x = self.startPos[0]
     self.y = self.startPos[1]
 
-    self.image.fill(settings.colors['yellow'])
     self.living = True
 
 
 class Ghost(py.sprite.Sprite):
-  def __init__(self, neuralNet, color, startPos):
+  def __init__(self, neuralNet, color, startPos, offset, imageSheet):
     py.sprite.Sprite.__init__(self)
     if not neuralNet is None:
       self.assignNewNet(neuralNet)
@@ -103,13 +105,19 @@ class Ghost(py.sprite.Sprite):
       self.movement = "random"
     
     self.image = py.Surface((16, 16))
-    self.image.fill(settings.colors[color])
     self.rect=self.image.get_rect()
-    self.rect.topleft = vec(startPos[0]*16,startPos[1]*16)
+
+    if color == "red":
+      self.image.blit(imageSheet, (0, 0), py.Rect(1,4*16, 16, 16))
+      self.image.set_colorkey((0,0,0), py.RLEACCEL)
+    else:
+      self.image.fill(settings.colors[color])
+    self.rect.topleft = vec(startPos[0]*16 + offset[0] ,startPos[1]*16 + offset[1])
 
     self.x = startPos[0]
     self.y = startPos[1]
     self.startPos = startPos
+    self.offset = offset
 
   def assignNewNet(self, nnWeights):
     w1 = nnWeights[0:settings.inputSize * settings.hiddenSize].reshape(settings.inputSize, settings.hiddenSize)
@@ -131,6 +139,6 @@ class Ghost(py.sprite.Sprite):
       genericMove(self, board, move)
         
   def reset(self):
-    self.rect.topleft = vec(self.startPos[0]*16,self.startPos[1]*16)
+    self.rect.topleft = vec(self.startPos[0]*16 + self.offset[0] ,self.startPos[1]*16 + self.offset[1])
     self.x = self.startPos[0]
     self.y = self.startPos[1]

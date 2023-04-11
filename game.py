@@ -10,18 +10,24 @@ import pygame as py
 import AStar
 
 class Game():
-  def __init__(self, render, screen, clock, pacmanNet, ghostNets):
+  def __init__(self, render, screen, clock, boardSize, pacmanNet, ghostNets):
     # Define general pygame requirements
     self.render = render
     self.screen = screen
     self.clock = clock
 
+    size = self.screen.get_size()
+    self.boardPixelSize = boardSize*16
+    self.offset = ((size[0]-self.boardPixelSize)/2, (size[1]-self.boardPixelSize)/2)
+
     self.pacmanStart = (2,9)
     self.ghostStart = (4,0)
 
+    sheet = py.image.load("spritesheet.png").convert()
+
     # Define Entities
-    self.pacman = entities.Pacman(pacmanNet, self.pacmanStart);
-    self.ghosts = [entities.Ghost(ghostNets[g], 'red', self.ghostStart) for g in range(settings.ghostCount)]
+    self.pacman = entities.Pacman(pacmanNet, self.pacmanStart, self.offset, sheet);
+    self.ghosts = [entities.Ghost(ghostNets[g], 'red', self.ghostStart, self.offset, sheet) for g in range(settings.ghostCount)]
 
     # add entities to group that will draw them
     self.allSprites = py.sprite.Group()
@@ -31,7 +37,7 @@ class Game():
 
     # The pacman playing board. Current idea for functionality is having it be a 2d array,
     # where 0=empty, 1=wall
-    self.board = [[0 for i in range(10)] for j in range(10)] 
+    self.board = [[0 for i in range(boardSize)] for j in range(boardSize)] 
 
 
   def run(self, iterations=settings.iterationsPerGen):
@@ -84,7 +90,6 @@ class Game():
       if self.pacman.x == ghost.x and self.pacman.y == ghost.y:
         # print("RIP pacman is dead")
         self.pacman.living = False
-        self.pacman.image.fill(settings.colors['white'])
         self.pacman.x = 10000 # off the screen so the RIP message won't be spammed
 
     pass
@@ -110,6 +115,7 @@ class Game():
     self.clock.tick(settings.FPS)
     
     self.screen.fill(settings.colors['white'])
+    py.draw.rect(self.screen, settings.colors['black'], py.Rect(self.offset[0], self.offset[1], self.boardPixelSize, self.boardPixelSize))
 
 
     self.allSprites.draw(self.screen)
