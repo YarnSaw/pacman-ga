@@ -8,9 +8,13 @@ so we may not want to render during training.
 import entities, settings
 import pygame as py
 import AStar
+import random
 
 class Game():
-  def __init__(self, render, screen, clock, pacmanNet, ghostNets, boardSize=10, wallMaxPenalty=10, onlyWallFitness=False, pacmanCanDie=True, pacmanStart=(2,9), ghostStarts=[(4,0)]):
+  def __init__(self, render, screen, clock, pacmanNet, ghostNets,
+               boardSize=10, wallMaxPenalty=10, onlyWallFitness=False,
+               pacmanCanDie=True, allRandomStart=False, pacmanMove=True, ghostMove=True,
+               pacmanStart=(2,9), ghostStarts=[(4,0)]):
     # Define general pygame requirements
     self.render = render
     self.screen = screen
@@ -20,12 +24,24 @@ class Game():
     self.boardPixelSize = boardSize*16
     self.offset = ((size[0]-self.boardPixelSize)/2, (size[1]-self.boardPixelSize)/2)
 
-    if len(ghostStarts) != 1 and len(ghostStarts) != len(ghostNets):
-      raise Exception("mis-specified number of ghost start points for the number of ghosts given")
-    if len(ghostStarts) == 1:
-      ghostStarts *= len(ghostNets)
-    self.ghostStarts = ghostStarts
-    self.pacmanStart = pacmanStart
+    self.allRandomStart = allRandomStart
+    if allRandomStart:
+      self.boardSize = boardSize
+      self.ghostStarts = []
+      for i in range(len(ghostNets)):
+        self.ghostStarts.append((random.randrange(0, boardSize), random.randrange(0, boardSize)))
+      self.pacmanStart = (random.randrange(0, boardSize), random.randrange(0, boardSize))
+      # make sure pacman doesn't start on a ghost if random starts
+      while self.pacmanStart in self.ghostStarts:
+        self.pacmanStart = (random.randrange(0, boardSize), random.randrange(0, boardSize))
+
+    else:
+      if len(ghostStarts) != 1 and len(ghostStarts) != len(ghostNets):
+        raise Exception("mis-specified number of ghost start points for the number of ghosts given")
+      if len(ghostStarts) == 1:
+        ghostStarts *= len(ghostNets)
+      self.ghostStarts = ghostStarts
+      self.pacmanStart = pacmanStart
 
     self.wallMaxPenalty = wallMaxPenalty
     self.onlyWallFitness = onlyWallFitness
@@ -34,8 +50,8 @@ class Game():
     sheet = py.image.load("spritesheet.png").convert()
 
     # Define Entities
-    self.pacman = entities.Pacman(pacmanNet, self.pacmanStart, self.offset, sheet);
-    self.ghosts = [entities.Ghost(ghostNets[g], 'red', self.ghostStarts[g], self.offset, sheet) for g in range(settings.ghostCount)]
+    self.pacman = entities.Pacman(pacmanNet, self.pacmanStart, self.offset, sheet, move=pacmanMove);
+    self.ghosts = [entities.Ghost(ghostNets[g], 'red', self.ghostStarts[g], self.offset, sheet, move=ghostMove) for g in range(settings.ghostCount)]
 
     # add entities to group that will draw them
     self.allSprites = py.sprite.Group()
@@ -131,9 +147,18 @@ class Game():
     '''
     Reset the game so it can be used for a new generation.
     '''
-    self.pacman.reset()
-    for ghost in self.ghosts:
-      ghost.reset()
+    if self.allRandomStart:
+      self.ghostStarts = []
+      for i in range(settings.ghostCount):
+        self.ghostStarts.append((random.randrange(0, self.boardSize), random.randrange(0, self.boardSize)))
+      self.pacmanStart = (random.randrange(0, self.boardSize), random.randrange(0, self.boardSize))
+      # make sure pacman doesn't start on a ghost if random starts
+      while self.pacmanStart in self.ghostStarts:
+        self.pacmanStart = (random.randrange(0, self.boardSize), random.randrange(0, self.boardSize))
+
+    self.pacman.reset(location = self.pacmanStart)
+    for ghost in range(len(self.ghosts)):
+      self.ghosts[ghost].reset(location=self.ghostStarts[ghost])
 
   def draw(self):
     if not self.render:

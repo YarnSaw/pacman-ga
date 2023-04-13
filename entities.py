@@ -48,13 +48,13 @@ class Pacman(py.sprite.Sprite):
   '''
   neuralNet = None if human player.
   '''
-  def __init__(self, nnWeights, startPos, offset, imageSheet):
+  def __init__(self, nnWeights, startPos, offset, imageSheet, move=True):
     py.sprite.Sprite.__init__(self)
     if not nnWeights is None:
       self.assignNewNet(nnWeights)
     else:
       self.movement = "random"
-    
+
     self.image = py.Surface((16, 16))
     self.rect=self.image.get_rect()
     self.image.blit(imageSheet, (0, 0), self.rect)
@@ -68,11 +68,11 @@ class Pacman(py.sprite.Sprite):
 
     self.living = True
     self.fitnessPenalty = 0
+    self.canMove = move
 
   def update(self, board, entityLocations):
-    if self.living:
+    if self.living and self.canMove:
       originalLocation = (self.x, self.y)
-      # Temporary: random movement
       if self.movement == 'random':
         move = random.randint(0,3)
         genericMove(self, board, move)
@@ -94,7 +94,9 @@ class Pacman(py.sprite.Sprite):
     self.brain = nn.NeuralNetwork(w1, w2)
     self.movement = "ai"
 
-  def reset(self):
+  def reset(self, location=None):
+    if location:
+      self.startPos=location
     self.rect.topleft = vec(self.startPos[0]*16 + self.offset[0] ,self.startPos[1]*16 + self.offset[1])
     self.x = self.startPos[0]
     self.y = self.startPos[1]
@@ -103,7 +105,7 @@ class Pacman(py.sprite.Sprite):
 
 
 class Ghost(py.sprite.Sprite):
-  def __init__(self, neuralNet, color, startPos, offset, imageSheet):
+  def __init__(self, neuralNet, color, startPos, offset, imageSheet, move=True):
     py.sprite.Sprite.__init__(self)
     if not neuralNet is None:
       self.assignNewNet(neuralNet)
@@ -126,6 +128,7 @@ class Ghost(py.sprite.Sprite):
     self.offset = offset
 
     self.fitnessPenalty = 0
+    self.canMove = move
 
   def assignNewNet(self, nnWeights):
     w1 = nnWeights[0:settings.inputSize * settings.hiddenSize].reshape(settings.inputSize, settings.hiddenSize)
@@ -135,23 +138,25 @@ class Ghost(py.sprite.Sprite):
     self.movement = "ai"
   
   def update(self, board, entityLocations):
-    originalLocation = (self.x, self.y)
-    # Temporary: random movement
-    if self.movement == 'random':
-      move = random.randint(0,3)
-      genericMove(self, board, move)
+    if self.canMove:
+      originalLocation = (self.x, self.y)
+      if self.movement == 'random':
+        move = random.randint(0,3)
+        genericMove(self, board, move)
 
-    elif self.movement == 'ai':
-      # don't have logic for determining other entities positions,
-      # so use random numbers for input
-      move = self.brain.forward(entityLocations)
-      genericMove(self, board, move)
-    
-    # If movement doesn't move pacman, ie he is at a wall
-    if (self.x, self.y) == originalLocation:
-      self.fitnessPenalty += 1
+      elif self.movement == 'ai':
+        # don't have logic for determining other entities positions,
+        # so use random numbers for input
+        move = self.brain.forward(entityLocations)
+        genericMove(self, board, move)
+      
+      # If movement doesn't move pacman, ie he is at a wall
+      if (self.x, self.y) == originalLocation:
+        self.fitnessPenalty += 1
         
-  def reset(self):
+  def reset(self, location=None):
+    if location:
+      self.startPos=location
     self.rect.topleft = vec(self.startPos[0]*16 + self.offset[0] ,self.startPos[1]*16 + self.offset[1])
     self.x = self.startPos[0]
     self.y = self.startPos[1]

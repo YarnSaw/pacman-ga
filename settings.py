@@ -13,7 +13,10 @@ colors = {
 }
 
 # GAME-BASED SETTINGS
-phase1Generations = 20
+phase1Generations = 5 # Training all entities to avoid the walls
+phase2Generations = 5 # Train ghosts to approach a stand-alone pacman
+phase3Generations = 5 # Train pacman to run away from stand-alone ghosts
+phase4Generations = 5 # Train everything all together
 iterationsPerGen=100
 ghostCount = 1
 boardSize=10
