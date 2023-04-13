@@ -10,7 +10,7 @@ import pygame as py
 import AStar
 
 class Game():
-  def __init__(self, render, screen, clock, boardSize, pacmanNet, ghostNets):
+  def __init__(self, render, screen, clock, pacmanNet, ghostNets, boardSize=10, wallMaxPenalty=10, onlyWallFitness=False, pacmanCanDie=True, pacmanStart=(2,9), ghostStarts=[(4,0)]):
     # Define general pygame requirements
     self.render = render
     self.screen = screen
@@ -20,14 +20,22 @@ class Game():
     self.boardPixelSize = boardSize*16
     self.offset = ((size[0]-self.boardPixelSize)/2, (size[1]-self.boardPixelSize)/2)
 
-    self.pacmanStart = (2,9)
-    self.ghostStart = (4,0)
+    if len(ghostStarts) != 1 and len(ghostStarts) != len(ghostNets):
+      raise Exception("mis-specified number of ghost start points for the number of ghosts given")
+    if len(ghostStarts) == 1:
+      ghostStarts *= len(ghostNets)
+    self.ghostStarts = ghostStarts
+    self.pacmanStart = pacmanStart
+
+    self.wallMaxPenalty = wallMaxPenalty
+    self.onlyWallFitness = onlyWallFitness
+    self.pacmanCanDie = pacmanCanDie
 
     sheet = py.image.load("spritesheet.png").convert()
 
     # Define Entities
     self.pacman = entities.Pacman(pacmanNet, self.pacmanStart, self.offset, sheet);
-    self.ghosts = [entities.Ghost(ghostNets[g], 'red', self.ghostStart, self.offset, sheet) for g in range(settings.ghostCount)]
+    self.ghosts = [entities.Ghost(ghostNets[g], 'red', self.ghostStarts[g], self.offset, sheet) for g in range(settings.ghostCount)]
 
     # add entities to group that will draw them
     self.allSprites = py.sprite.Group()
@@ -47,13 +55,25 @@ class Game():
       if not self.pacman.living:
         break # no need to waste computation
 
-    fitness = [] # List of ghost fitnesses, followed by pacman's fitness at the end. SUBJECT TO CHANGE
-    for g in self.ghosts:
-      if self.pacman.living:
-        fitness.append(AStar.astar(self.board, (g.x, g.y), (self.pacman.x, self.pacman.y)))
-      else:
-        fitness.append(0)
-    fitness.append(min(fitness)) #pacman's fitness is the distance from the closest ghost
+    fitness = [] # List of ghost fitnesses, followed by pacman's fitness at the end.
+    # For training all entities to avoid the walls
+    if self.onlyWallFitness:
+      for g in self.ghosts:
+        fitness.append(g.fitnessPenalty)
+      fitness.append(self.pacman.fitnessPenalty)
+    else:
+      pacmanFitness = 0
+      for g in self.ghosts:
+        if self.pacman.living:
+          fit = AStar.astar(self.board, (g.x, g.y), (self.pacman.x, self.pacman.y))
+        else:
+          fit = 0
+        pacmanFitness = max(pacmanFitness, fit)
+        fit = fit + min(self.wallMaxPenalty, g.fitnessPenalty) # cap the penalty for running into walls 
+        fitness.append(fit)
+
+      pacmanFitness = pacmanFitness - min(self.wallMaxPenalty, self.pacman.fitnessPenalty) # cap the penalty for running into walls 
+      fitness.append(pacmanFitness) #pacman's fitness is the distance from the closest ghost
 
     return fitness # return the fitness
 
@@ -82,17 +102,25 @@ class Game():
     locations.append(self.pacman.y)
     
     self.pacman.update(self.board, locations)
+
+    # Detect collisions
+    for ghost in self.ghosts:
+      if self.pacman.x == ghost.x and self.pacman.y == ghost.y and self.pacmanCanDie:
+        # print("RIP pacman is dead")
+        self.pacman.living = False
+        self.pacman.x = 10000 # off the screen so the RIP message won't be spammed
+        return;
+
     for ghost in self.ghosts:
       ghost.update(self.board, locations)
     
     # Detect collisions
     for ghost in self.ghosts:
-      if self.pacman.x == ghost.x and self.pacman.y == ghost.y:
+      if self.pacman.x == ghost.x and self.pacman.y == ghost.y and self.pacmanCanDie:
         # print("RIP pacman is dead")
         self.pacman.living = False
         self.pacman.x = 10000 # off the screen so the RIP message won't be spammed
-
-    pass
+        return
 
   def assignPopToGame(self, pacmanNet, ghostNets):
     self.pacman.assignNewNet(pacmanNet)

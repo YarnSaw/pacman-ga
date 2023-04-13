@@ -3,7 +3,7 @@ Global settings.
 '''
 
 
-FPS = 30
+FPS = 60
 
 colors = {
     'white': (255, 255, 255),
@@ -13,9 +13,10 @@ colors = {
 }
 
 # GAME-BASED SETTINGS
-generations = 200 # eh, kinda gameplay kinda GA. But I wanted it by iterationsPerGen cus they determine the time to train
+phase1Generations = 20
 iterationsPerGen=100
 ghostCount = 1
+boardSize=10
 
 # NEURAL NETWORK SETTINGS
 inputSize = (ghostCount+1)*2 + 1 # relative position of all other entities + bias

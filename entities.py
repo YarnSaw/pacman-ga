@@ -67,9 +67,11 @@ class Pacman(py.sprite.Sprite):
     self.offset = offset
 
     self.living = True
+    self.fitnessPenalty = 0
 
   def update(self, board, entityLocations):
     if self.living:
+      originalLocation = (self.x, self.y)
       # Temporary: random movement
       if self.movement == 'random':
         move = random.randint(0,3)
@@ -80,6 +82,10 @@ class Pacman(py.sprite.Sprite):
         # so use random numbers for input
         move = self.brain.forward(entityLocations)
         genericMove(self, board, move)
+      
+      # If movement doesn't move pacman, ie he is at a wall
+      if (self.x, self.y) == originalLocation:
+        self.fitnessPenalty += 1
 
   def assignNewNet(self, nnWeights):
     w1 = nnWeights[0:settings.inputSize * settings.hiddenSize].reshape(settings.inputSize, settings.hiddenSize)
@@ -119,6 +125,8 @@ class Ghost(py.sprite.Sprite):
     self.startPos = startPos
     self.offset = offset
 
+    self.fitnessPenalty = 0
+
   def assignNewNet(self, nnWeights):
     w1 = nnWeights[0:settings.inputSize * settings.hiddenSize].reshape(settings.inputSize, settings.hiddenSize)
     w2 = nnWeights[settings.inputSize * settings.hiddenSize:].reshape(settings.hiddenSize, settings.outputSize)
@@ -127,6 +135,7 @@ class Ghost(py.sprite.Sprite):
     self.movement = "ai"
   
   def update(self, board, entityLocations):
+    originalLocation = (self.x, self.y)
     # Temporary: random movement
     if self.movement == 'random':
       move = random.randint(0,3)
@@ -137,6 +146,10 @@ class Ghost(py.sprite.Sprite):
       # so use random numbers for input
       move = self.brain.forward(entityLocations)
       genericMove(self, board, move)
+    
+    # If movement doesn't move pacman, ie he is at a wall
+    if (self.x, self.y) == originalLocation:
+      self.fitnessPenalty += 1
         
   def reset(self):
     self.rect.topleft = vec(self.startPos[0]*16 + self.offset[0] ,self.startPos[1]*16 + self.offset[1])
