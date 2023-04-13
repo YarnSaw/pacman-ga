@@ -102,6 +102,7 @@ class Pacman(py.sprite.Sprite):
     self.y = self.startPos[1]
 
     self.living = True
+    self.fitnessPenalty = 0
 
 
 class Ghost(py.sprite.Sprite):
@@ -160,3 +161,5 @@ class Ghost(py.sprite.Sprite):
     self.rect.topleft = vec(self.startPos[0]*16 + self.offset[0] ,self.startPos[1]*16 + self.offset[1])
     self.x = self.startPos[0]
     self.y = self.startPos[1]
+
+    self.fitnessPenalty = 0

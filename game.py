@@ -76,7 +76,7 @@ class Game():
     if self.onlyWallFitness:
       for g in self.ghosts:
         fitness.append(g.fitnessPenalty)
-      fitness.append(self.pacman.fitnessPenalty)
+      fitness.append(-self.pacman.fitnessPenalty)
     else:
       pacmanFitness = 0
       for g in self.ghosts:
