@@ -5,7 +5,7 @@ import game, nn, genetic, settings
 import pygame as py
 
 
-def stepGeneration(games, pacmanGA=None, ghostGAs=None):
+def stepGeneration(games, pacmanGA=None, ghostGAs=None, phase=None):
   ghostFitnesses = [[] for g in range(settings.ghostCount)]
   pacmanFitness = []
   for g in games:
@@ -16,7 +16,16 @@ def stepGeneration(games, pacmanGA=None, ghostGAs=None):
     g.reset()
 
   # comment out if too many logs, but useful to verify the ghosts are learning.
-  print("Count of best fitness for generation: ",ghostFitnesses[i].count(0), "out of ", len(ghostFitnesses[i]))
+  # print("Count of best fitness for generation: ",ghostFitnesses[i].count(0), "out of ", len(ghostFitnesses[i]))
+  if phase == 1:
+    count = pacmanFitness.count(0) + sum([ghostFitnesses[i].count(0) for i in range(len(ghostFitnesses))])
+    print("Number of entities that avoid walls completely:",count, "of", len(games)*(len(ghostFitnesses)+1), "entities.")
+  if phase == 2:
+    print("Number of games the ghost caught pacman and avoided all walls: ",ghostFitnesses[0].count(0), "out of ", len(ghostFitnesses[0]))
+  if phase == 3:
+    count = pacmanFitness.count(0) + sum([ghostFitnesses[i].count(0) for i in range(len(ghostFitnesses))])
+    print("Best pacman fitness: ",max(pacmanFitness)," which occurred",  pacmanFitness.count(max(pacmanFitness))," times out of ", len(ghostFitnesses))
+  # no phase 4 print rn because I'm not sure what we would want to
   
   # Get new population
   if pacmanGA:
@@ -51,8 +60,6 @@ if __name__ == "__main__":
                       [ghostGAs[j].offspring[i] for j in range(settings.ghostCount)],
                       pacmanCanDie=False, boardSize=settings.boardSize, wallMaxPenalty=100, onlyWallFitness=True)
             for i in range(settings.populationSize)]
-  if renderAny:
-    games[0].render = True
 
 
   # Phase 1
@@ -61,7 +68,7 @@ if __name__ == "__main__":
     print(gen+1)
 
     # Run the games, evaluate fitness
-    stepGeneration(games, pacmanGA, ghostGAs)
+    stepGeneration(games, pacmanGA, ghostGAs, phase=1)
     games = games[0:len(pacmanGA.offspring)] # prune games after initial generation
 
     # assign offspring to each game field, so next iteration runs all of them.
@@ -78,8 +85,6 @@ if __name__ == "__main__":
                       [ghostGAs[j].offspring[i] for j in range(settings.ghostCount)],
                       boardSize=settings.boardSize, allRandomStart=True, pacmanMove=False)
             for i in range(settings.populationSize)]
-  if renderAny:
-    games[0].render = True
 
 
   # Phase 2
@@ -88,7 +93,7 @@ if __name__ == "__main__":
     print(gen+1)
 
     # Run the games, evaluate fitness
-    stepGeneration(games, ghostGAs=ghostGAs)
+    stepGeneration(games, ghostGAs=ghostGAs, phase=2)
     games = games[0:len(ghostGAs[0].offspring)]
 
     # assign offspring to each game field, so next iteration runs all of them.
@@ -104,9 +109,6 @@ if __name__ == "__main__":
                       [ghostGAs[j].offspring[i] for j in range(settings.ghostCount)],
                       boardSize=settings.boardSize, allRandomStart=True, ghostMove=False)
             for i in range(settings.populationSize)]
-  if renderAny:
-    games[0].render = True
-
 
   # Phase 3
   print("PHASE 3: Pacman learns to go avoid ghosts")
@@ -114,7 +116,7 @@ if __name__ == "__main__":
     print(gen+1)
 
     # Run the games, evaluate fitness
-    stepGeneration(games, pacmanGA=pacmanGA)
+    stepGeneration(games, pacmanGA=pacmanGA, phase=3)
     games = games[0:len(pacmanGA.offspring)]
 
     # assign offspring to each game field, so next iteration runs all of them.
