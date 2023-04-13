@@ -24,7 +24,7 @@ def stepGeneration(games, pacmanGA=None, ghostGAs=None, phase=None):
     print("Number of games the ghost caught pacman and avoided all walls: ",ghostFitnesses[0].count(0), "out of ", len(ghostFitnesses[0]))
   if phase == 3:
     count = pacmanFitness.count(0) + sum([ghostFitnesses[i].count(0) for i in range(len(ghostFitnesses))])
-    print("Best pacman fitness: ",max(pacmanFitness)," which occurred",  pacmanFitness.count(max(pacmanFitness))," times out of ", len(ghostFitnesses))
+    print("Best pacman fitness: ",max(pacmanFitness)," which occurred",  pacmanFitness.count(max(pacmanFitness))," times out of ", len(pacmanFitness))
   # no phase 4 print rn because I'm not sure what we would want to
   
   # Get new population
